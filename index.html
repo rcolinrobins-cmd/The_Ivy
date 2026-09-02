@@ -8,20 +8,96 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="design-system.css">
-<style>
-  .hero {
-    background-image: url("images/ive_welcome.jpg");
-  }
-</style>
 </head>
-<body>
+<body class="landing">
 
-<section class="hero">
-  <div class="hero-content">
-    <h1>Welcome to<br>The Ivy</h1>
-    <p>A premier wedding venue and event space located in beautiful downtown Garland, Tx</p>
+<header class="site-header site-header--compact">
+  <h1 class="site-title">The Ivy</h1>
+  <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+</header>
+
+<div class="split-hero">
+  <div class="split-hero__text">
+    <div class="split-hero__text-inner">
+      <h2>Follow our Opening</h2>
+      <form class="signup-form" id="signup-form">
+        <input type="email" name="email" required placeholder="Your email address" aria-label="Email address">
+        <button type="submit">Sign Up</button>
+      </form>
+      <p class="signup-success" id="signup-success" hidden>Thanks — you're on the list!</p>
+    </div>
   </div>
-</section>
+
+  <div class="split-hero__carousel">
+    <div class="carousel carousel--full">
+      <div class="carousel-track">
+        <div class="carousel-slide"><img src="images/carousel/1-exterior.jpg" alt="The Ivy exterior"></div>
+        <div class="carousel-slide"><img src="images/carousel/2-night.jpg" alt="The Ivy at night"></div>
+        <div class="carousel-slide"><img src="images/carousel/3-lobby.jpg" alt="The Ivy lobby"></div>
+        <div class="carousel-slide"><img src="images/carousel/4-bridal-suite.png" alt="The Ivy bridal suite"></div>
+        <div class="carousel-slide"><img src="images/carousel/5-sanctuary.jpg" alt="The Ivy sanctuary"></div>
+      </div>
+      <button class="carousel-arrow carousel-arrow--prev" aria-label="Previous slide">&#8249;</button>
+      <button class="carousel-arrow carousel-arrow--next" aria-label="Next slide">&#8250;</button>
+      <div class="carousel-dots"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Carousel
+  (function () {
+    var track = document.querySelector('.carousel-track');
+    var slides = document.querySelectorAll('.carousel-slide');
+    var dotsContainer = document.querySelector('.carousel-dots');
+    var currentIndex = 0;
+
+    // Wraps around: index -1 goes to the last slide, index === length goes
+    // back to the first, so prev/next never dead-end at the ends.
+    function goToSlide(index) {
+      currentIndex = (index + slides.length) % slides.length;
+      slides[currentIndex].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }
+
+    slides.forEach(function (slide, i) {
+      var dot = document.createElement('button');
+      dot.className = 'carousel-dot' + (i === 0 ? ' is-active' : '');
+      dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
+      dot.addEventListener('click', function () {
+        goToSlide(i);
+      });
+      dotsContainer.appendChild(dot);
+    });
+
+    var dots = document.querySelectorAll('.carousel-dot');
+
+    document.querySelector('.carousel-arrow--prev').addEventListener('click', function () {
+      goToSlide(currentIndex - 1);
+    });
+    document.querySelector('.carousel-arrow--next').addEventListener('click', function () {
+      goToSlide(currentIndex + 1);
+    });
+
+    track.addEventListener('scroll', function () {
+      var index = Math.round(track.scrollLeft / track.clientWidth);
+      currentIndex = index;
+      dots.forEach(function (d, i) {
+        d.classList.toggle('is-active', i === index);
+      });
+    });
+  })();
+
+  // Signup form
+  // NOTE: not yet connected to a backend. The next step is to wire this up
+  // to a Google Sheet (via a Google Apps Script web app endpoint) so
+  // submissions here get recorded.
+  document.getElementById('signup-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    // TODO: POST this.email.value to the Google Apps Script web app URL once available.
+    document.getElementById('signup-success').hidden = false;
+    this.reset();
+  });
+</script>
 
 </body>
 </html>

@@ -7,10 +7,28 @@
   --font-heading: "Playfair Display", Georgia, "Times New Roman", serif;
   --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
 
-  /* Color */
+  /* Type scale (light-background pages) */
+  --font-size-page-title: clamp(1.75rem, 4vw, 2.75rem);
+  --font-size-section-heading: clamp(1.5rem, 3vw, 2.25rem);
+
+  /* Color — over photography (dark overlay) */
   --color-text-primary: #ffffff;
   --color-text-secondary: rgba(255, 255, 255, 0.8);
   --color-overlay: rgba(0, 0, 0, 0.35);
+
+  /* Color — light-background pages */
+  --color-bg: #ffffff;
+  --color-bg-muted: #faf9f7;
+  --color-text-dark: #1c1c1c;
+  --color-text-muted: #666666;
+  --color-border: #e2e2e2;
+  --color-accent: #b08d57;
+  --color-accent-hover: #c7a06a;
+
+  /* Color — dark panels (e.g. split-hero) */
+  --color-dark-bg: #202b22;
+  --color-on-dark: #f5f2ea;
+  --color-on-dark-muted: rgba(245, 242, 234, 0.75);
 
   /* Text shadow (for text over photography) */
   --shadow-text-strong: 0 2px 12px rgba(0, 0, 0, 0.5);
@@ -25,6 +43,8 @@
   --space-sm: 1rem;
   --space-md: 1.5rem;
   --space-lg: 3rem;
+  --space-xl: 4rem;
+  --space-2xl: 6rem;
 }
 
 /* Reset */
@@ -37,6 +57,28 @@
 body {
   font-family: var(--font-body);
   overflow-x: hidden;
+  background: var(--color-bg);
+  color: var(--color-text-dark);
+}
+
+/* Landing layout — fits the page to one viewport (no scroll), with a
+   compact header and a component below that fills the remaining space.
+   Structure:
+   <body class="landing">
+     <header class="site-header site-header--compact">...</header>
+     <div class="carousel carousel--full">...</div>
+   </body> */
+
+html, body.landing {
+  height: 100%;
+}
+
+body.landing {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  height: 100svh;
+  overflow: hidden;
 }
 
 /* Hero component — full-viewport image with centered overlay text.
@@ -93,4 +135,508 @@ body {
   font-size: clamp(1.05rem, 2.3vw, 1.4rem);
   letter-spacing: var(--tracking-body);
   text-shadow: var(--shadow-text-soft);
+}
+
+/* Site header — page title on a light background.
+   Structure:
+   <header class="site-header">
+     <h1 class="site-title">The Ivy</h1>
+   </header> */
+
+.site-header {
+  padding: var(--space-lg) var(--space-md) var(--space-sm);
+  text-align: center;
+}
+
+/* Compact variant — for use with .landing, where the header must leave
+   room for the component below to fill the rest of the viewport. */
+.site-header--compact {
+  flex: 0 0 auto;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.site-title {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-page-title);
+  letter-spacing: var(--tracking-heading);
+  color: var(--color-text-dark);
+}
+
+/* Site subtitle — small italic tagline under the site title, with
+   bullet-separated items.
+   Structure:
+   <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p> */
+
+.site-subtitle {
+  margin-top: var(--space-xs);
+  font-family: var(--font-heading);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: var(--tracking-body);
+  color: var(--color-text-muted);
+}
+
+.site-subtitle .dot {
+  display: inline-block;
+  margin: 0 0.5em;
+  font-style: normal;
+  font-size: 0.6em;
+  vertical-align: middle;
+  color: var(--color-accent);
+}
+
+/* Carousel — horizontal, swipeable image gallery with prev/next controls and dots.
+   Structure:
+   <div class="carousel">
+     <div class="carousel-track">
+       <div class="carousel-slide"><img src="..." alt="..."></div>
+       ...
+     </div>
+     <button class="carousel-arrow carousel-arrow--prev" aria-label="Previous slide">&#8249;</button>
+     <button class="carousel-arrow carousel-arrow--next" aria-label="Next slide">&#8250;</button>
+     <div class="carousel-dots"></div>
+   </div>
+   Dots are populated by script (see carousel.js). */
+
+.carousel {
+  position: relative;
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 var(--space-md);
+}
+
+.carousel-track {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.carousel-track::-webkit-scrollbar {
+  display: none;
+}
+
+.carousel-slide {
+  flex: 0 0 100%;
+  scroll-snap-align: center;
+}
+
+.carousel-slide img {
+  width: 100%;
+  height: clamp(260px, 50vw, 520px);
+  object-fit: cover;
+  display: block;
+  border-radius: 4px;
+}
+
+.carousel-arrow {
+  position: absolute;
+  z-index: 4;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 2.5rem;
+  height: 2.5rem;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--color-text-dark);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-arrow--prev {
+  left: calc(var(--space-md) + 0.5rem);
+}
+
+.carousel-arrow--next {
+  right: calc(var(--space-md) + 0.5rem);
+}
+
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.carousel-dot {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-border);
+  cursor: pointer;
+}
+
+.carousel-dot.is-active {
+  background: var(--color-text-dark);
+}
+
+/* Full-bleed variant — edge-to-edge carousel that fills the remaining
+   height of a .landing page, with dots overlaid on the image instead of
+   sitting below it. Pair with .carousel-overlay for text/form on top. */
+
+.carousel--full {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+.carousel--full .carousel-track,
+.carousel--full .carousel-slide {
+  height: 100%;
+}
+
+.carousel--full .carousel-slide img {
+  height: 100%;
+  border-radius: 0;
+}
+
+.carousel--full .carousel-dots {
+  position: absolute;
+  left: 50%;
+  bottom: var(--space-sm);
+  transform: translateX(-50%);
+  margin-top: 0;
+  z-index: 3;
+}
+
+.carousel--full .carousel-dot {
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.carousel--full .carousel-dot.is-active {
+  background: #ffffff;
+}
+
+/* Fixed-height modifier — use with .carousel--full to size the image to a
+   set share of the viewport (e.g. 75%) instead of filling all remaining
+   space, leaving room for a sibling section (like .cta-bar) below it. */
+
+.carousel--75vh {
+  flex: 0 0 auto;
+  height: 75vh;
+  height: 75svh;
+}
+
+/* CTA bar — a light-background bar pairing a heading with an inline
+   signup form, typically placed below a fixed-height carousel.
+   Structure:
+   <section class="cta-bar">
+     <h2>Heading</h2>
+     <form class="signup-form" id="signup-form">
+       <input type="email" required placeholder="Your email address">
+       <button type="submit">Sign Up</button>
+     </form>
+     <p class="signup-success" hidden>Thank you!</p>
+   </section> */
+
+.cta-bar {
+  flex: 1 1 auto;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-bg);
+  text-align: center;
+}
+
+.cta-bar h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-section-heading);
+  color: var(--color-text-dark);
+}
+
+/* Single non-wrapping row: input grows to fill, button stays right-anchored. */
+.cta-bar .signup-form {
+  margin-top: 0;
+  width: 100%;
+  max-width: 480px;
+  flex-wrap: nowrap;
+}
+
+.cta-bar .signup-form input[type="email"] {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.cta-bar .signup-form button {
+  flex: 0 0 auto;
+}
+
+/* Carousel overlay — a translucent card of text/form centered on top of
+   a full-bleed carousel image, readable regardless of the photo behind it.
+   Structure (inside .carousel--full):
+   <div class="carousel-overlay">
+     <h2>Heading</h2>
+     <p>Body copy</p>
+     <form class="signup-form">...</form>
+   </div> */
+
+.carousel-overlay {
+  position: absolute;
+  z-index: 2;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: calc(100% - 2 * var(--space-md));
+  max-width: 30rem;
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border-radius: 8px;
+  padding: var(--space-md) var(--space-lg);
+  text-align: center;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15);
+}
+
+.carousel-overlay h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-section-heading);
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-xs);
+}
+
+.carousel-overlay p {
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-size: 0.95rem;
+}
+
+.carousel-overlay .signup-form {
+  margin-top: var(--space-sm);
+}
+
+/* Content section — centered heading and body copy on a light background.
+   Structure:
+   <section class="content-section">
+     <h2>Heading</h2>
+     <p>Body copy</p>
+   </section> */
+
+.content-section {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: var(--space-2xl) var(--space-md);
+  text-align: center;
+}
+
+.content-section h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-section-heading);
+  color: var(--color-text-dark);
+  margin-bottom: var(--space-sm);
+}
+
+.content-section p {
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  line-height: 1.7;
+}
+
+/* Signup section — email capture form on a muted background.
+   Structure:
+   <section class="signup content-section">
+     <h2>Get Connected</h2>
+     <p>Body copy</p>
+     <form class="signup-form">
+       <input type="email" required placeholder="Your email address">
+       <button type="submit">Sign Up</button>
+     </form>
+     <p class="signup-success" hidden>Thank you!</p>
+   </section> */
+
+.signup {
+  max-width: none;
+  background: var(--color-bg-muted);
+  padding: var(--space-2xl) var(--space-md);
+}
+
+.signup-form {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-top: var(--space-md);
+}
+
+.signup-form input[type="email"] {
+  min-width: 260px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+}
+
+.signup-form input[type="email"]:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.signup-form button {
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-text-dark);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.signup-form button:hover {
+  background: var(--color-accent);
+}
+
+.signup-success {
+  margin-top: var(--space-sm);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+}
+
+/* Split hero — a two-column layout below the site header: a dark text
+   panel (headline, signup form) at 1/3 width alongside a full-bleed image
+   carousel at 2/3 width, sharing one dark background so the two halves
+   read as one cohesive section instead of stacked blocks. Pairs with
+   .landing + .site-header--compact, which together size it to fill the
+   remaining viewport height below the header.
+   Structure:
+   <body class="landing">
+     <header class="site-header site-header--compact">
+       <h1 class="site-title">The Ivy</h1>
+       <p class="site-subtitle">...</p>
+     </header>
+     <div class="split-hero">
+       <div class="split-hero__text">
+         <h2>Discover The Ivy</h2>
+         <form class="signup-form" id="signup-form">...</form>
+         <p class="signup-success" hidden>...</p>
+       </div>
+       <div class="split-hero__carousel">
+         <div class="carousel carousel--full">...</div>
+       </div>
+     </div>
+   </body> */
+
+.split-hero {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  width: 100%;
+  overflow: hidden;
+}
+
+.split-hero__text {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  background: var(--color-dark-bg);
+  color: var(--color-on-dark);
+}
+
+/* Padding lives on this inner wrapper, not on .split-hero__text itself —
+   padding on the flex item would count against its flex-basis (border-box)
+   and throw off the 1/3-vs-2/3 split with .split-hero__carousel. */
+.split-hero__text-inner {
+  width: 100%;
+  padding: var(--space-xl) var(--space-lg);
+  text-align: left;
+}
+
+.split-hero__text h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-section-heading);
+  line-height: 1.25;
+  color: var(--color-on-dark);
+  margin-bottom: var(--space-md);
+}
+
+.split-hero__text .signup-form {
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  max-width: 420px;
+  flex-wrap: nowrap;
+}
+
+.split-hero__text .signup-form input[type="email"] {
+  width: 100%;
+  min-width: 0;
+}
+
+.split-hero__text .signup-form button {
+  align-self: flex-start;
+  background: var(--color-accent);
+  color: var(--color-dark-bg);
+}
+
+.split-hero__text .signup-form button:hover {
+  background: var(--color-accent-hover);
+}
+
+.split-hero__text .signup-success {
+  color: var(--color-on-dark);
+}
+
+.split-hero__carousel {
+  position: relative;
+  flex: 2 1 0;
+  display: flex;
+  overflow: hidden;
+  background: var(--color-dark-bg);
+}
+
+/* Subtle dark tint over the images so their tone reads as one piece with
+   the text panel's dark background, rather than a plain bright photo. */
+.split-hero__carousel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--color-dark-bg);
+  opacity: 0.18;
+  pointer-events: none;
+  z-index: 1;
+}
+
+@media (max-width: 800px) {
+  .split-hero {
+    flex-direction: column;
+  }
+
+  .split-hero__text,
+  .split-hero__carousel {
+    flex: 1 1 50%;
+  }
+
+  .split-hero__text {
+    padding: var(--space-lg) var(--space-md);
+  }
 }
