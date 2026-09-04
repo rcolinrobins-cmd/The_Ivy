@@ -183,7 +183,7 @@ A styled dropdown (trigger button + listbox) standing in for a native `<select>`
 - The chosen value lives in a same-named hidden input (`name="interest"`), so the surrounding form works the same as it would with a real `<select>` — no changes needed to submission logic.
 - `index.html`'s inline script (a separate IIFE from the modal's) handles click-to-toggle, click-outside-to-close, Escape, and Arrow/Enter/Space keyboard navigation, and exposes `select.resetSelect()` — called by the modal's open handler so reopening always starts from a clean placeholder state.
 - **Watch for the same event-timing pitfall as the modal's `[hidden]` issue, but with event listeners**: the trigger's `keydown` handler calls `e.stopPropagation()` before attaching the listbox's document-level keydown listener. Without it, the *same* keydown event — still bubbling toward `document` — would immediately re-fire against the listener it just attached, double-processing one ArrowDown press and skipping past the first option. Keep this pattern (open first, `stopPropagation()`, *then* attach the document listener) for any future "open on keydown and immediately attach a document listener" interaction.
-- The listbox currently holds only a disabled "More options coming soon" placeholder — see the `TODO` in `index.html` for the exact markup to add real options.
+- Current options: Booking an Event, Taking a Tour, Business Partnering.
 
 ## Components available but not currently used
 
