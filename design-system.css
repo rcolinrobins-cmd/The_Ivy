@@ -149,10 +149,86 @@ body.landing {
 }
 
 /* Compact variant — for use with .landing, where the header must leave
-   room for the component below to fill the rest of the viewport. */
+   room for the component below to fill the rest of the viewport. A
+   three-column grid keeps the brand block truly centered: column 1 holds
+   an invisible mirror of the CTA button (same markup, hidden) so it takes
+   up exactly as much width as the real button in column 3, balancing the
+   center column regardless of the button's label length.
+   Structure:
+   <header class="site-header site-header--compact">
+     <a class="site-header__cta site-header__cta--spacer" aria-hidden="true" tabindex="-1">
+       Join our journey
+       <svg class="site-header__cta-icon" ...>...</svg>
+     </a>
+     <div class="site-header__brand">
+       <h1 class="site-title">The Ivy</h1>
+       <p class="site-subtitle">...</p>
+     </div>
+     <a class="site-header__cta" href="#">
+       Join our journey
+       <svg class="site-header__cta-icon" ...>...</svg>
+     </a>
+   </header> */
 .site-header--compact {
   flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
   padding: var(--space-sm) var(--space-md);
+  text-align: center;
+}
+
+.site-header__brand {
+  grid-column: 2;
+}
+
+.site-header__cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5em;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid var(--color-text-dark);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+.site-header__cta:hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #ffffff;
+}
+
+.site-header__cta-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+}
+
+.site-header__cta--spacer {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+@media (max-width: 800px) {
+  .site-header--compact {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .site-header__cta--spacer {
+    display: none;
+  }
 }
 
 .site-title {
@@ -520,36 +596,46 @@ body.landing {
   font-family: var(--font-body);
 }
 
-/* Split hero — a two-column layout below the site header: a dark text
-   panel (headline, signup form) at 1/3 width alongside a full-bleed image
-   carousel at 2/3 width, sharing one dark background so the two halves
-   read as one cohesive section instead of stacked blocks. Pairs with
-   .landing + .site-header--compact, which together size it to fill the
-   remaining viewport height below the header.
-   Structure:
+/* Split hero — a dark, full-width section below the site header with a
+   centered carousel (currently the dominant element on the page — green
+   shows as a symmetric margin on either side of it, rather than the
+   carousel running edge-to-edge). Pairs with .landing +
+   .site-header--compact, which together size it to fill the remaining
+   viewport height below the header. An optional text panel
+   (.split-hero__text) is available if a future page wants the older
+   two-column layout instead — see below.
+   Structure (current, carousel-only):
    <body class="landing">
-     <header class="site-header site-header--compact">
-       <h1 class="site-title">The Ivy</h1>
-       <p class="site-subtitle">...</p>
-     </header>
+     <header class="site-header site-header--compact">...</header>
      <div class="split-hero">
-       <div class="split-hero__text">
-         <h2>Discover The Ivy</h2>
-         <form class="signup-form" id="signup-form">...</form>
-         <p class="signup-success" hidden>...</p>
-       </div>
        <div class="split-hero__carousel">
          <div class="carousel carousel--full">...</div>
        </div>
      </div>
-   </body> */
+   </body>
+
+   Structure (two-column variant, not currently used — add
+   .split-hero__text as a sibling before .split-hero__carousel and remove
+   the max-width/margin centering below to go back to a 1/4-3/4 split):
+   <div class="split-hero">
+     <div class="split-hero__text">
+       <div class="split-hero__text-inner">
+         <h2>Heading</h2>
+         <form class="signup-form" id="signup-form">...</form>
+         <p class="signup-success" hidden>...</p>
+       </div>
+     </div>
+     <div class="split-hero__carousel">...</div>
+   </div> */
 
 .split-hero {
   flex: 1 1 auto;
   min-height: 0;
   display: flex;
+  justify-content: center;
   width: 100%;
   overflow: hidden;
+  background: var(--color-dark-bg);
 }
 
 .split-hero__text {
@@ -608,7 +694,8 @@ body.landing {
 
 .split-hero__carousel {
   position: relative;
-  flex: 2 1 0;
+  width: 80%;
+  max-width: 1400px;
   display: flex;
   overflow: hidden;
   background: var(--color-dark-bg);
@@ -626,17 +713,173 @@ body.landing {
   z-index: 1;
 }
 
+/* Narrower green margin on small screens, where width is scarcer. If the
+   two-column variant (.split-hero__text as a sibling) is reintroduced,
+   it will need its own responsive rules — flex-direction: column plus
+   flex: 1 1 50% on both children — to stack rather than squeeze side by
+   side; that behavior isn't included here since it doesn't apply to the
+   current carousel-only layout. */
 @media (max-width: 800px) {
-  .split-hero {
-    flex-direction: column;
-  }
-
-  .split-hero__text,
   .split-hero__carousel {
-    flex: 1 1 50%;
+    width: 92%;
   }
 
   .split-hero__text {
     padding: var(--space-lg) var(--space-md);
+  }
+}
+
+/* Modal — a centered dialog over a dark backdrop, for the "Join our
+   journey" signup form. Mobile-friendly: the box is width-constrained
+   with side padding at all sizes, and scrolls internally
+   (max-height: 90vh) rather than overflowing on short viewports.
+   Toggle with the `is-open` class (not the `hidden` attribute — an
+   author style needs to win over the UA default here, so display is
+   handled entirely by this class).
+   Structure:
+   <div class="modal-overlay" id="join-modal-overlay">
+     <div class="modal" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
+       <button class="modal-close" type="button" aria-label="Close">&times;</button>
+       <h2 id="join-modal-title">Join our Journey</h2>
+       <form class="modal-form">
+         <label class="modal-field">
+           <span>Name</span>
+           <input type="text" required>
+         </label>
+         ...
+         <button type="submit">Submit</button>
+       </form>
+       <p class="modal-success" hidden>Thank you!</p>
+     </div>
+   </div>
+   See index.html for the open/close/focus-management script. */
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  padding: var(--space-md);
+  z-index: 100;
+}
+
+.modal-overlay.is-open {
+  display: flex;
+}
+
+.modal {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--color-bg);
+  color: var(--color-text-dark);
+  border-radius: 8px;
+  padding: var(--space-lg);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-close {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.modal-close:hover {
+  color: var(--color-text-dark);
+}
+
+.modal h2 {
+  font-family: var(--font-heading);
+  font-weight: 600;
+  font-size: var(--font-size-section-heading);
+  margin-bottom: var(--space-md);
+  padding-right: var(--space-lg);
+}
+
+.modal-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* The explicit display:flex above would otherwise win over the browser's
+   default [hidden] { display: none }, since author styles always beat the
+   UA stylesheet — so it needs restating here for the hidden attribute to
+   actually hide the form after a successful submission. */
+.modal-form[hidden] {
+  display: none;
+}
+
+.modal-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.modal-field span {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--color-text-dark);
+}
+
+.modal-field input,
+.modal-field select {
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  font-size: 1rem;
+}
+
+.modal-field input:focus,
+.modal-field select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.modal-form button[type="submit"] {
+  margin-top: var(--space-xs);
+  padding: 0.75rem 1.75rem;
+  border: none;
+  border-radius: 4px;
+  background: var(--color-text-dark);
+  color: #ffffff;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.modal-form button[type="submit"]:hover {
+  background: var(--color-accent);
+}
+
+.modal-success {
+  margin-top: var(--space-sm);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+@media (max-width: 480px) {
+  .modal {
+    padding: var(--space-md);
   }
 }

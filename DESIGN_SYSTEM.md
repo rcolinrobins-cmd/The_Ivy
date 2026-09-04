@@ -73,43 +73,47 @@ The homepage uses a full-viewport, no-scroll layout: a compact header, then one 
 
 ### Site header
 
-Brand title + tagline, white background, sits above the main content.
+Brand title + tagline, white background, sits above the main content, with a CTA button pinned to the far right that opens the "Join our Journey" modal.
 
 ```html
 <header class="site-header site-header--compact">
-  <h1 class="site-title">The Ivy</h1>
-  <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+  <a class="site-header__cta site-header__cta--spacer" aria-hidden="true" tabindex="-1">
+    Join our journey
+    <svg class="site-header__cta-icon" ...>...</svg>
+  </a>
+
+  <div class="site-header__brand">
+    <h1 class="site-title">The Ivy</h1>
+    <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+  </div>
+
+  <a class="site-header__cta" id="join-journey" href="#">
+    Join our journey
+    <svg class="site-header__cta-icon" ...>...</svg>
+  </a>
 </header>
 ```
 
-- `.site-header--compact` is the variant used with `.landing` (small padding, `flex: 0 0 auto`). Plain `.site-header` (more padding) is available for a page that isn't a full-viewport layout.
+- `.site-header--compact` is the variant used with `.landing` (small padding, `flex: 0 0 auto`, three-column grid). Plain `.site-header` (more padding, no grid/CTA) is available for a page that isn't a full-viewport layout.
 - `.site-subtitle .dot` renders each `&bull;` as a small accent-colored circle instead of a plain character.
+- The brand block stays truly centered regardless of the CTA button's label length: `.site-header__cta--spacer` is an invisible mirror of the real button (same markup, `visibility: hidden`), balancing the grid's left column so it always matches the real button's width in the right column. Below 800px width the header stacks (spacer hidden entirely via `display: none`; brand and CTA centered, one above the other).
+- The CTA's actual open/close/focus-management logic lives in `index.html`'s inline script, not in CSS.
 
 ### Split hero
 
-Two-column section: a 1/3-width dark text panel (heading + signup form) beside a 2/3-width full-bleed image carousel, sharing one dark background so both halves read as one cohesive section. Below 800px width it stacks (text on top, carousel below, 50/50 height).
+A dark, full-width section below the header with a **centered** image carousel — currently the dominant element on the page. Green shows as a symmetric margin on either side of the carousel (80% width on desktop, 92% on screens ≤800px) rather than the carousel running edge-to-edge.
 
 ```html
 <div class="split-hero">
-  <div class="split-hero__text">
-    <div class="split-hero__text-inner">
-      <h2>Heading</h2>
-      <form class="signup-form" id="signup-form">
-        <input type="email" required placeholder="Your email address">
-        <button type="submit">Sign Up</button>
-      </form>
-      <p class="signup-success" hidden>Thank you!</p>
-    </div>
-  </div>
   <div class="split-hero__carousel">
     <div class="carousel carousel--full">...</div>
   </div>
 </div>
 ```
 
-- Padding lives on `.split-hero__text-inner`, not `.split-hero__text` itself — padding directly on the flex item would count against its flex-basis and throw off the 1/3-vs-2/3 split.
-- `.split-hero__carousel::after` adds an 18%-opacity dark tint over the images so their tone matches the text panel's solid dark background.
-- Within `.split-hero__text`, the heading, signup form (stacked: input full-width, button below it left-aligned), and success message all have dark-panel color overrides already applied — no extra classes needed.
+- `.split-hero` itself is the solid dark background (`--color-dark-bg`) and centers its child horizontally.
+- `.split-hero__carousel::after` adds an 18%-opacity dark tint over the images so their tone reads as one piece with the background.
+- A two-column variant (dark text panel at 1/4 width beside the carousel at 3/4, instead of a single centered carousel) is still defined but not currently used — see `.split-hero__text` in `design-system.css` for the full markup/notes if a future page wants it back.
 
 ### Carousel
 
@@ -129,15 +133,39 @@ Horizontal, swipeable image gallery with prev/next arrows and dots. Prev/next wr
 
 Dots are populated by the inline script in `index.html` (`goToSlide()` handles the wraparound and keeps dots/arrows/swipe in sync). `.carousel--full` is the edge-to-edge variant that fills its container's height, with dots overlaid on the image; the bare `.carousel` (max-width 1100px, dots below the image) is available for a non-full-bleed use.
 
-### Signup form
+### Modal
 
-Base styles (`.signup-form`, `.signup-form input[type="email"]`, `.signup-form button`, `.signup-success`) are shared by every context; `.split-hero__text`, `.cta-bar`, and `.carousel-overlay` each layer on their own layout/color overrides (see file for specifics). The form is **not yet wired to a backend** — `index.html` has a `TODO` marking where a Google Apps Script web app POST call should go once the Sheet is set up.
+A centered dialog over a dark backdrop — currently used for the "Join our Journey" form (Name, Email, and an interest dropdown left empty pending real options — see the `TODO` in `index.html`). Mobile-friendly: width-constrained with side padding at all sizes, and scrolls internally (`max-height: 90vh`) instead of overflowing on short viewports.
+
+```html
+<div class="modal-overlay" id="join-modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
+    <button class="modal-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="join-modal-title">Join our Journey</h2>
+    <form class="modal-form">
+      <label class="modal-field">
+        <span>Name</span>
+        <input type="text" required>
+      </label>
+      <!-- ...email, select... -->
+      <button type="submit">Submit</button>
+    </form>
+    <p class="modal-success" hidden>Thank you!</p>
+  </div>
+</div>
+```
+
+- Toggle visibility with the `is-open` class on `.modal-overlay` — **not** the `hidden` attribute. `.modal-overlay` and `.modal-form` both set an explicit `display`, which (being author CSS) would otherwise permanently override the browser's default `[hidden] { display: none }`; `.modal-form[hidden] { display: none; }` restates the override so hiding the form after submit actually works. Keep this in mind when adding any new element that needs to be hide-able inside a component that already sets `display` on it.
+- `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, or clicking the dark backdrop — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
+- Submission is **not yet wired to a backend** — there's a `TODO` marking where a Google Apps Script web app POST call should go once the Sheet is set up.
 
 ## Components available but not currently used
 
 Kept in `design-system.css` for reuse on future pages/sections:
 
 - **`.hero`** — full-viewport photo with centered, top-weighted overlay text (the original homepage layout, before the split-hero redesign).
+- **`.split-hero__text`** — the dark text panel (heading + signup form) from the split-hero's two-column variant; see the "Split hero" section above.
+- **`.signup-form`** / **`.signup-success`** — the original signup form styles (as opposed to `.modal-form`, which is what's active now). Still used by `.split-hero__text`, `.cta-bar`, and `.carousel-overlay` if any of those are reintroduced.
 - **`.cta-bar`** — light-background bar pairing a heading with an inline signup form; pairs with `.carousel--75vh` (fixes a carousel to 75% of the viewport, leaving the bar the rest).
 - **`.carousel-overlay`** — a translucent card of text/form centered on top of a full-bleed carousel image.
 - **`.content-section`** / **`.signup`** — centered heading + body copy block, with a muted-background variant for a standalone signup section.

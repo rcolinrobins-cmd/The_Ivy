@@ -12,22 +12,23 @@
 <body class="landing">
 
 <header class="site-header site-header--compact">
-  <h1 class="site-title">The Ivy</h1>
-  <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+  <a class="site-header__cta site-header__cta--spacer" aria-hidden="true" tabindex="-1">
+    Join our journey
+    <svg class="site-header__cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+  </a>
+
+  <div class="site-header__brand">
+    <h1 class="site-title">The Ivy</h1>
+    <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+  </div>
+
+  <a class="site-header__cta" id="join-journey" href="#">
+    Join our journey
+    <svg class="site-header__cta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+  </a>
 </header>
 
 <div class="split-hero">
-  <div class="split-hero__text">
-    <div class="split-hero__text-inner">
-      <h2>Follow our Opening</h2>
-      <form class="signup-form" id="signup-form">
-        <input type="email" name="email" required placeholder="Your email address" aria-label="Email address">
-        <button type="submit">Sign Up</button>
-      </form>
-      <p class="signup-success" id="signup-success" hidden>Thanks — you're on the list!</p>
-    </div>
-  </div>
-
   <div class="split-hero__carousel">
     <div class="carousel carousel--full">
       <div class="carousel-track">
@@ -41,6 +42,32 @@
       <button class="carousel-arrow carousel-arrow--next" aria-label="Next slide">&#8250;</button>
       <div class="carousel-dots"></div>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="join-modal-overlay">
+  <div class="modal" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
+    <button class="modal-close" id="join-modal-close" type="button" aria-label="Close">&times;</button>
+    <h2 id="join-modal-title">Join our Journey</h2>
+    <form class="modal-form" id="join-modal-form">
+      <label class="modal-field">
+        <span>Name</span>
+        <input type="text" name="name" required placeholder="Your name">
+      </label>
+      <label class="modal-field">
+        <span>Email</span>
+        <input type="email" name="email" required placeholder="Your email address">
+      </label>
+      <label class="modal-field">
+        <span>I'm interested in</span>
+        <select name="interest" required>
+          <option value="" disabled selected>Select an option</option>
+          <!-- TODO: fill in real options -->
+        </select>
+      </label>
+      <button type="submit">Submit</button>
+    </form>
+    <p class="modal-success" id="join-modal-success" hidden>Thanks — we'll be in touch!</p>
   </div>
 </div>
 
@@ -87,16 +114,56 @@
     });
   })();
 
-  // Signup form
-  // NOTE: not yet connected to a backend. The next step is to wire this up
-  // to a Google Sheet (via a Google Apps Script web app endpoint) so
-  // submissions here get recorded.
-  document.getElementById('signup-form').addEventListener('submit', function (e) {
-    e.preventDefault();
-    // TODO: POST this.email.value to the Google Apps Script web app URL once available.
-    document.getElementById('signup-success').hidden = false;
-    this.reset();
-  });
+  // "Join our journey" modal
+  (function () {
+    var openBtn = document.getElementById('join-journey');
+    var overlay = document.getElementById('join-modal-overlay');
+    var closeBtn = document.getElementById('join-modal-close');
+    var form = document.getElementById('join-modal-form');
+    var success = document.getElementById('join-modal-success');
+    var lastFocused = null;
+
+    function openModal(e) {
+      e.preventDefault();
+      lastFocused = document.activeElement;
+      form.hidden = false;
+      success.hidden = true;
+      form.reset();
+      overlay.classList.add('is-open');
+      document.addEventListener('keydown', onKeydown);
+      var firstField = form.querySelector('input, select');
+      if (firstField) firstField.focus();
+    }
+
+    function closeModal() {
+      overlay.classList.remove('is-open');
+      document.removeEventListener('keydown', onKeydown);
+      if (lastFocused) lastFocused.focus();
+    }
+
+    function onKeydown(e) {
+      if (e.key === 'Escape') closeModal();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+
+    // Close when clicking the dark backdrop, but not the modal box itself.
+    overlay.addEventListener('click', function (e) {
+      if (e.target === overlay) closeModal();
+    });
+
+    // NOTE: not yet connected to a backend. The next step is to wire this
+    // up to a Google Sheet (via a Google Apps Script web app endpoint) so
+    // submissions here get recorded.
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      // TODO: POST this.name.value / this.email.value / this.interest.value
+      // to the Google Apps Script web app URL once available.
+      form.hidden = true;
+      success.hidden = false;
+    });
+  })();
 </script>
 
 </body>
