@@ -133,6 +133,8 @@ Horizontal, swipeable image gallery with prev/next arrows and dots. Prev/next wr
 
 Dots are populated by the inline script in `index.html` (`goToSlide()` handles the wraparound and keeps dots/arrows/swipe in sync). `.carousel--full` is the edge-to-edge variant that fills its container's height, with dots overlaid on the image; the bare `.carousel` (max-width 1100px, dots below the image) is available for a non-full-bleed use.
 
+Left/Right arrow keys also navigate the carousel (page-wide, not just when the carousel has focus). The listener skips itself while focus is in a text field (so cursor movement in the modal's inputs isn't hijacked) or while the modal is open (so the background carousel doesn't change under an active dialog).
+
 ### Modal
 
 A centered dialog over a dark backdrop — currently used for the "Join our Journey" form (Name, Email, and an interest dropdown left empty pending real options — see the `TODO` in `index.html`). Mobile-friendly: width-constrained with side padding at all sizes, and scrolls internally (`max-height: 90vh`) instead of overflowing on short viewports.

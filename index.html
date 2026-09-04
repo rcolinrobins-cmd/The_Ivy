@@ -120,6 +120,21 @@
         d.classList.toggle('is-active', i === index);
       });
     });
+
+    // Left/Right arrow keys navigate the carousel. Skipped while typing in
+    // a field (so cursor movement in the modal's Name/Email inputs isn't
+    // hijacked) or while the modal is open (so the background carousel
+    // doesn't change under an active dialog).
+    document.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+
+      var tag = document.activeElement.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
+      if (document.getElementById('join-modal-overlay').classList.contains('is-open')) return;
+
+      e.preventDefault();
+      goToSlide(e.key === 'ArrowLeft' ? currentIndex - 1 : currentIndex + 1);
+    });
   })();
 
   // Custom "I'm interested in" dropdown — a styled trigger + listbox
