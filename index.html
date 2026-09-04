@@ -58,13 +58,21 @@
         <span>Email</span>
         <input type="email" name="email" required placeholder="Your email address">
       </label>
-      <label class="modal-field">
-        <span>I'm interested in</span>
-        <select name="interest" required>
-          <option value="" disabled selected>Select an option</option>
-          <!-- TODO: fill in real options -->
-        </select>
-      </label>
+      <div class="modal-field">
+        <span id="interest-label">I'm interested in</span>
+        <div class="select" id="interest-select">
+          <button type="button" class="select-trigger" id="interest-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="interest-label interest-trigger">
+            <span class="select-value is-placeholder">Select an option</span>
+            <svg class="select-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          </button>
+          <ul class="select-options" role="listbox" id="interest-listbox" aria-labelledby="interest-label" tabindex="-1" hidden>
+            <li class="select-option select-option--empty" aria-disabled="true">More options coming soon</li>
+            <!-- TODO: replace with real options, e.g.: -->
+            <!-- <li class="select-option" role="option" tabindex="-1" data-value="weddings">Weddings</li> -->
+          </ul>
+        </div>
+        <input type="hidden" name="interest" id="interest-value">
+      </div>
       <button type="submit">Submit</button>
     </form>
     <p class="modal-success" id="join-modal-success" hidden>Thanks — we'll be in touch!</p>
@@ -114,6 +122,128 @@
     });
   })();
 
+  // Custom "I'm interested in" dropdown — a styled trigger + listbox
+  // standing in for a native <select>, since a native select's popup list
+  // can't be styled consistently across browsers. The chosen value lives
+  // in a same-named hidden input, so the surrounding form works the same
+  // as it would with a real <select>.
+  (function () {
+    var select = document.getElementById('interest-select');
+    var trigger = document.getElementById('interest-trigger');
+    var listbox = document.getElementById('interest-listbox');
+    var valueInput = document.getElementById('interest-value');
+    var valueLabel = trigger.querySelector('.select-value');
+    var placeholderText = valueLabel.textContent;
+
+    function getOptions() {
+      return Array.prototype.slice.call(listbox.querySelectorAll('.select-option[role="option"]'));
+    }
+
+    function isOpen() {
+      return !listbox.hidden;
+    }
+
+    function openList() {
+      listbox.hidden = false;
+      trigger.classList.add('is-open');
+      trigger.setAttribute('aria-expanded', 'true');
+      document.addEventListener('click', onDocumentClick);
+      document.addEventListener('keydown', onListKeydown);
+    }
+
+    function closeList() {
+      listbox.hidden = true;
+      trigger.classList.remove('is-open');
+      trigger.setAttribute('aria-expanded', 'false');
+      document.removeEventListener('click', onDocumentClick);
+      document.removeEventListener('keydown', onListKeydown);
+    }
+
+    function selectOption(option) {
+      valueInput.value = option.getAttribute('data-value') || '';
+      valueLabel.textContent = option.textContent;
+      valueLabel.classList.remove('is-placeholder');
+      getOptions().forEach(function (o) {
+        o.setAttribute('aria-selected', o === option ? 'true' : 'false');
+      });
+      closeList();
+      trigger.focus();
+    }
+
+    function onDocumentClick(e) {
+      if (!select.contains(e.target)) closeList();
+    }
+
+    function onListKeydown(e) {
+      var options = getOptions();
+      var activeIndex = options.indexOf(document.activeElement);
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        closeList();
+        trigger.focus();
+      } else if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        (options[activeIndex + 1] || options[0]).focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        (options[activeIndex - 1] || options[options.length - 1]).focus();
+      } else if ((e.key === 'Enter' || e.key === ' ') && activeIndex > -1) {
+        e.preventDefault();
+        selectOption(options[activeIndex]);
+      }
+    }
+
+    trigger.addEventListener('click', function (e) {
+      // Without this, opening also immediately re-fires this same click on
+      // the document listener that openList() is about to attach (it's
+      // still mid-bubble toward document) — harmless here only because
+      // onDocumentClick happens to ignore clicks inside .select, but
+      // stopping it outright removes the doubt.
+      e.stopPropagation();
+      if (isOpen()) {
+        closeList();
+      } else {
+        openList();
+      }
+    });
+
+    // Open (and jump straight into the list) when reaching the trigger by
+    // keyboard, matching how a native select responds to these keys.
+    trigger.addEventListener('keydown', function (e) {
+      if (!isOpen() && (e.key === 'ArrowDown' || e.key === 'Enter' || e.key === ' ')) {
+        e.preventDefault();
+        // Stop this keydown from also reaching the document listener that
+        // openList() attaches below — it's still mid-bubble toward
+        // document, so without this it would immediately reprocess this
+        // same ArrowDown against the option we're about to focus, skipping
+        // past it to the second option instead of landing on the first.
+        e.stopPropagation();
+        openList();
+        var options = getOptions();
+        if (options[0]) options[0].focus();
+      }
+    });
+
+    getOptions().forEach(function (option) {
+      option.addEventListener('click', function () {
+        selectOption(option);
+      });
+    });
+
+    // Called by the modal's open handler so reopening starts from a clean
+    // "Select an option" state rather than a previous choice.
+    select.resetSelect = function () {
+      valueInput.value = '';
+      valueLabel.textContent = placeholderText;
+      valueLabel.classList.add('is-placeholder');
+      getOptions().forEach(function (o) {
+        o.setAttribute('aria-selected', 'false');
+      });
+      closeList();
+    };
+  })();
+
   // "Join our journey" modal
   (function () {
     var openBtn = document.getElementById('join-journey');
@@ -121,6 +251,7 @@
     var closeBtn = document.getElementById('join-modal-close');
     var form = document.getElementById('join-modal-form');
     var success = document.getElementById('join-modal-success');
+    var interestSelect = document.getElementById('interest-select');
     var lastFocused = null;
 
     function openModal(e) {
@@ -129,6 +260,7 @@
       form.hidden = false;
       success.hidden = true;
       form.reset();
+      if (interestSelect.resetSelect) interestSelect.resetSelect();
       overlay.classList.add('is-open');
       document.addEventListener('keydown', onKeydown);
       var firstField = form.querySelector('input, select');

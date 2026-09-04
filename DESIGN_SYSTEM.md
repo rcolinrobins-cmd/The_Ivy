@@ -147,7 +147,7 @@ A centered dialog over a dark backdrop — currently used for the "Join our Jour
         <span>Name</span>
         <input type="text" required>
       </label>
-      <!-- ...email, select... -->
+      <!-- ...email, and the custom select described below... -->
       <button type="submit">Submit</button>
     </form>
     <p class="modal-success" hidden>Thank you!</p>
@@ -157,7 +157,33 @@ A centered dialog over a dark backdrop — currently used for the "Join our Jour
 
 - Toggle visibility with the `is-open` class on `.modal-overlay` — **not** the `hidden` attribute. `.modal-overlay` and `.modal-form` both set an explicit `display`, which (being author CSS) would otherwise permanently override the browser's default `[hidden] { display: none }`; `.modal-form[hidden] { display: none; }` restates the override so hiding the form after submit actually works. Keep this in mind when adding any new element that needs to be hide-able inside a component that already sets `display` on it.
 - `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, or clicking the dark backdrop — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
+- The "I'm interested in" field is a custom select, not a native `<select>` — see below.
 - Submission is **not yet wired to a backend** — there's a `TODO` marking where a Google Apps Script web app POST call should go once the Sheet is set up.
+
+### Custom select
+
+A styled dropdown (trigger button + listbox) standing in for a native `<select>` — used for the modal's "I'm interested in" field. A native select's popup option list can't be styled consistently across browsers, so this is built from scratch instead, matching `.modal-field input`'s border/padding/radius/font exactly.
+
+```html
+<div class="modal-field">
+  <span id="interest-label">I'm interested in</span>
+  <div class="select" id="interest-select">
+    <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="interest-label ...">
+      <span class="select-value is-placeholder">Select an option</span>
+      <svg class="select-icon" ...chevron...>
+    </button>
+    <ul class="select-options" role="listbox" tabindex="-1" hidden>
+      <li class="select-option" role="option" tabindex="-1" data-value="weddings">Weddings</li>
+    </ul>
+  </div>
+  <input type="hidden" name="interest">
+</div>
+```
+
+- The chosen value lives in a same-named hidden input (`name="interest"`), so the surrounding form works the same as it would with a real `<select>` — no changes needed to submission logic.
+- `index.html`'s inline script (a separate IIFE from the modal's) handles click-to-toggle, click-outside-to-close, Escape, and Arrow/Enter/Space keyboard navigation, and exposes `select.resetSelect()` — called by the modal's open handler so reopening always starts from a clean placeholder state.
+- **Watch for the same event-timing pitfall as the modal's `[hidden]` issue, but with event listeners**: the trigger's `keydown` handler calls `e.stopPropagation()` before attaching the listbox's document-level keydown listener. Without it, the *same* keydown event — still bubbling toward `document` — would immediately re-fire against the listener it just attached, double-processing one ArrowDown press and skipping past the first option. Keep this pattern (open first, `stopPropagation()`, *then* attach the document listener) for any future "open on keydown and immediately attach a document listener" interaction.
+- The listbox currently holds only a disabled "More options coming soon" placeholder — see the `TODO` in `index.html` for the exact markup to add real options.
 
 ## Components available but not currently used
 

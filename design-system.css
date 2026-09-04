@@ -853,6 +853,116 @@ body.landing {
   border-color: var(--color-accent);
 }
 
+/* Custom select — a styled dropdown (trigger button + listbox) standing
+   in for a native <select>, since a native select's option-list styling
+   can't be controlled cross-browser. Matches .modal-field input's border,
+   padding, radius, and font exactly, so it reads as the same kind of
+   field. The real value lives in a same-named hidden input, so form
+   submission (FormData, this.interest.value, etc.) works unchanged.
+   Structure:
+   <div class="modal-field">
+     <span id="interest-label">Label</span>
+     <div class="select">
+       <button type="button" class="select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="interest-label ...">
+         <span class="select-value is-placeholder">Select an option</span>
+         <svg class="select-icon" ...chevron...>
+       </button>
+       <ul class="select-options" role="listbox" tabindex="-1" hidden>
+         <li class="select-option" role="option" tabindex="-1" data-value="...">Label</li>
+       </ul>
+     </div>
+     <input type="hidden" name="interest">
+   </div>
+   See index.html for the open/close/keyboard-navigation/selection script. */
+
+.select {
+  position: relative;
+}
+
+.select-trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  background: var(--color-bg);
+  color: var(--color-text-dark);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.select-trigger:focus,
+.select-trigger.is-open {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.select-value.is-placeholder {
+  color: var(--color-text-muted);
+}
+
+.select-icon {
+  width: 1em;
+  height: 1em;
+  flex: 0 0 auto;
+  color: var(--color-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.select-trigger.is-open .select-icon {
+  transform: rotate(180deg);
+}
+
+.select-options {
+  position: absolute;
+  z-index: 10;
+  top: calc(100% + 0.35rem);
+  left: 0;
+  right: 0;
+  max-height: 220px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0.25rem 0;
+  list-style: none;
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.select-options[hidden] {
+  display: none;
+}
+
+.select-option {
+  padding: 0.6rem 1rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  color: var(--color-text-dark);
+  cursor: pointer;
+}
+
+.select-option:hover,
+.select-option.is-active {
+  background: var(--color-bg-muted);
+}
+
+.select-option[aria-selected="true"] {
+  color: var(--color-accent);
+  font-weight: 600;
+}
+
+.select-option--empty {
+  color: var(--color-text-muted);
+  cursor: default;
+  pointer-events: none;
+}
+
 .modal-form button[type="submit"] {
   margin-top: var(--space-xs);
   padding: 0.75rem 1.75rem;
