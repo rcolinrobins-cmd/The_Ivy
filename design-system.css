@@ -825,6 +825,13 @@ body.landing {
   padding-right: var(--space-lg);
 }
 
+.modal-intro {
+  margin-bottom: var(--space-md);
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  line-height: 1.5;
+}
+
 .modal-form {
   display: flex;
   flex-direction: column;
