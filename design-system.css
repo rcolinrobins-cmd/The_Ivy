@@ -24,6 +24,7 @@
   --color-border: #e2e2e2;
   --color-accent: #b08d57;
   --color-accent-hover: #c7a06a;
+  --color-error: #b3261e;
 
   /* Color — dark panels (e.g. split-hero) */
   --color-dark-bg: #202b22;
@@ -1013,6 +1014,13 @@ body.landing {
 .modal-success {
   margin-top: var(--space-sm);
   color: var(--color-text-dark);
+  font-family: var(--font-body);
+  text-align: left;
+}
+
+.modal-error {
+  margin-top: var(--space-sm);
+  color: var(--color-error);
   font-family: var(--font-body);
   text-align: left;
 }

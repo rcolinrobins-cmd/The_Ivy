@@ -87,6 +87,7 @@
       <button type="submit">Submit</button>
     </form>
     <p class="modal-success" id="join-modal-success" hidden>Thanks — we'll be in touch!</p>
+    <p class="modal-error" id="join-modal-error" hidden>Something went wrong submitting the form. Please try again.</p>
   </div>
 </div>
 
@@ -215,11 +216,18 @@
 
   // "The Guest List" modal
   (function () {
+    // Google Apps Script Web App URL — see google-apps-script/Code.gs for
+    // the backend code and setup steps. Deploy it, then paste the
+    // resulting URL (https://script.google.com/macros/s/.../exec) here.
+    var GOOGLE_SHEET_ENDPOINT = 'https://script.google.com/macros/s/AKfycbzDtcJS9tpWQ2NM2k1DEQ-j6FuqWpDI8AZN8e2UmPEmshD8R9GhDJl8SJ4f_KaE02cS3g/exec';
+
     var openBtn = document.getElementById('join-journey');
     var overlay = document.getElementById('join-modal-overlay');
     var closeBtn = document.getElementById('join-modal-close');
     var form = document.getElementById('join-modal-form');
     var success = document.getElementById('join-modal-success');
+    var error = document.getElementById('join-modal-error');
+    var submitBtn = form.querySelector('button[type="submit"]');
     var interestSelect = document.getElementById('interest-select');
     var lastFocused = null;
 
@@ -228,6 +236,9 @@
       lastFocused = document.activeElement;
       form.hidden = false;
       success.hidden = true;
+      error.hidden = true;
+      submitBtn.disabled = false;
+      submitBtn.textContent = 'Submit';
       form.reset();
       if (interestSelect.resetSelect) interestSelect.resetSelect();
       overlay.classList.add('is-open');
@@ -254,15 +265,46 @@
       if (e.target === overlay) closeModal();
     });
 
-    // NOTE: not yet connected to a backend. The next step is to wire this
-    // up to a Google Sheet (via a Google Apps Script web app endpoint) so
-    // submissions here get recorded.
     form.addEventListener('submit', function (e) {
       e.preventDefault();
-      // TODO: POST this.name.value / this.email.value / this.interest.value
-      // to the Google Apps Script web app URL once available.
-      form.hidden = true;
-      success.hidden = false;
+
+      if (GOOGLE_SHEET_ENDPOINT.indexOf('PASTE_YOUR_DEPLOYED_WEB_APP_URL_HERE') !== -1) {
+        console.error('GOOGLE_SHEET_ENDPOINT is not set — see google-apps-script/Code.gs.');
+        error.hidden = false;
+        return;
+      }
+
+      error.hidden = true;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting…';
+
+      var body = new URLSearchParams({
+        name: form.name.value,
+        email: form.email.value,
+        interest: form.interest.value
+      });
+
+      // mode: 'no-cors' because Apps Script Web Apps don't send an
+      // Access-Control-Allow-Origin header the browser will accept, so the
+      // response can't actually be read here — this is the standard
+      // workaround (fire the request, treat a non-throwing fetch as
+      // success, treat a network-level failure — offline, unreachable —
+      // as the only detectable error case).
+      fetch(GOOGLE_SHEET_ENDPOINT, {
+        method: 'POST',
+        mode: 'no-cors',
+        body: body
+      })
+        .then(function () {
+          form.hidden = true;
+          success.hidden = false;
+        })
+        .catch(function (err) {
+          console.error('Guest list submission failed:', err);
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+          error.hidden = false;
+        });
     });
   })();
 </script>

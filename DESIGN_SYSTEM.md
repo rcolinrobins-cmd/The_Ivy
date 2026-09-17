@@ -30,6 +30,7 @@ Playfair Display is loaded from Google Fonts with weights/styles `400`, `600`, a
 | `--color-border` | `#e2e2e2` | Input borders, dots |
 | `--color-accent` | `#b08d57` | Buttons, links, focus states (warm gold) |
 | `--color-accent-hover` | `#c7a06a` | Hover state for accent buttons on dark backgrounds |
+| `--color-error` | `#b3261e` | Form error messages (e.g. `.modal-error`) |
 
 **Dark panels** (e.g. `.split-hero__text`)
 
@@ -170,6 +171,7 @@ A centered dialog over a dark backdrop — currently used for "The Guest List" f
       <button type="submit">Submit</button>
     </form>
     <p class="modal-success" hidden>Thank you!</p>
+    <p class="modal-error" hidden>Something went wrong.</p>
   </div>
 </div>
 ```
@@ -177,8 +179,10 @@ A centered dialog over a dark backdrop — currently used for "The Guest List" f
 - Toggle visibility with the `is-open` class on `.modal-overlay` — **not** the `hidden` attribute. `.modal-overlay` and `.modal-form` both set an explicit `display`, which (being author CSS) would otherwise permanently override the browser's default `[hidden] { display: none }`; `.modal-form[hidden] { display: none; }` restates the override so hiding the form after submit actually works. Keep this in mind when adding any new element that needs to be hide-able inside a component that already sets `display` on it.
 - `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, or clicking the dark backdrop — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
 - The "I'm interested in" field is a custom select, not a native `<select>` — see below.
-- `.modal-intro` (a plain `<p>` between the `<h2>` and the `<form>`) is muted body-copy styling for a short line introducing the form.
-- Submission is **not yet wired to a backend** — there's a `TODO` marking where a Google Apps Script web app POST call should go once the Sheet is set up.
+- `.modal-intro` (a plain `<p>` between the `<h2>` and the `<form>`) is muted body-copy styling for a short line introducing the form. `.modal-error` (same layout as `.modal-success`, but `--color-error`) is shown instead of the success message if submission fails.
+- **Submission is wired to Google Sheets** via a Google Apps Script Web App — see [`google-apps-script/Code.gs`](google-apps-script/Code.gs) for the backend code and one-time setup steps (create a Sheet, paste the script in, deploy as a Web App, copy the resulting URL). The URL goes in `GOOGLE_SHEET_ENDPOINT` at the top of the modal's script in `index.html`.
+  - Uses `fetch(..., { mode: 'no-cors', body: new URLSearchParams({...}) })` — Apps Script Web Apps don't send an `Access-Control-Allow-Origin` header the browser will accept, so the response can't actually be read; a non-throwing `fetch` is treated as success, and a network-level failure (offline, unreachable, `GOOGLE_SHEET_ENDPOINT` still the placeholder) is the only detectable error case, shown via `.modal-error`.
+  - The submit button disables itself and reads "Submitting…" while the request is in flight, and both its state and any prior `.modal-error`/`.modal-success` are reset every time the modal opens.
 
 ### Custom select
 
