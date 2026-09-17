@@ -101,23 +101,41 @@ Brand title + tagline, white background, sits above the main content, with a CTA
 
 ### Split hero
 
-A dark, full-width section below the header with a **centered** image carousel — currently the dominant element on the page. Green shows as a symmetric margin on either side of the carousel (80% width on desktop, 92% on screens ≤800px) rather than the carousel running edge-to-edge.
+A dark, full-width section below the header with a **centered** video — currently the dominant element on the page. Green shows as a symmetric margin on either side of it (80% width on desktop, 92% on screens ≤800px) rather than it running edge-to-edge.
 
 ```html
 <div class="split-hero">
-  <div class="split-hero__carousel">
-    <div class="carousel carousel--full">...</div>
+  <div class="split-hero__media">
+    <video class="hero-video" ...>...</video>
   </div>
 </div>
 ```
 
 - `.split-hero` itself is the solid dark background (`--color-dark-bg`) and centers its child horizontally.
-- `.split-hero__carousel::after` adds an 18%-opacity dark tint over the images so their tone reads as one piece with the background.
-- A two-column variant (dark text panel at 1/4 width beside the carousel at 3/4, instead of a single centered carousel) is still defined but not currently used — see `.split-hero__text` in `design-system.css` for the full markup/notes if a future page wants it back.
+- `.split-hero__media::after` adds an 18%-opacity dark tint over the media so its tone reads as one piece with the background. `pointer-events: none` on it lets clicks reach the video's native controls underneath.
+- A two-column variant (dark text panel at 1/4 width beside the media at 3/4, instead of a single centered element) is still defined but not currently used — see `.split-hero__text` in `design-system.css` for the full markup/notes if a future page wants it back.
 
-### Carousel
+### Hero video
 
-Horizontal, swipeable image gallery with prev/next arrows and dots. Prev/next wrap around (last slide's "next" goes to the first, and vice versa).
+Fills `.split-hero__media` the same way the full-bleed carousel used to (`.hero-video { width: 100%; height: 100%; object-fit: cover; }`), with native browser controls so viewers can pause/seek. Replaced the image carousel as the homepage's centerpiece — a ~97s venue tour (exterior, bride suite, sanctuary, etc.), sourced from `video/The Ivy.mp4` and transcoded to `video/hero.mp4` (H.264, ~17MB) and `video/hero.webm` (VP9, ~16MB), down from the ~95MB original.
+
+```html
+<video class="hero-video" autoplay muted loop playsinline controls preload="metadata" poster="video/hero-poster.jpg">
+  <source src="video/hero.webm" type="video/webm">
+  <source src="video/hero.mp4" type="video/mp4">
+  Your browser doesn't support embedded video.
+  <a href="video/hero.mp4">Download the video</a> instead.
+</video>
+```
+
+- `autoplay`, `muted`, and `playsinline` are all required together for autoplay to actually work across mobile browsers — iOS Safari won't autoplay video that isn't muted, and without `playsinline` it forces fullscreen playback instead of playing inline.
+- `controls` is kept (unlike a typical decorative background-video pattern) since this is a real venue tour with distinct labeled sections, not just an ambient loop — viewers can pause or scrub it.
+- WebM is listed first since it's usually smaller for equivalent quality; the browser picks the first `<source>` it supports, falling back to the MP4 (broadest compatibility — every modern desktop and mobile browser supports H.264/MP4). The text/link after the sources is fallback content for the vanishingly rare browser with no `<video>` support at all.
+- `video/The Ivy.mp4` (the original ~95MB file) is intentionally **not** committed to the repo — only the compressed `hero.mp4`/`hero.webm` and the extracted `hero-poster.jpg` are.
+
+### Carousel (available but not currently used)
+
+Horizontal, swipeable image gallery with prev/next arrows and dots, with wraparound (last slide's "next" goes to the first, and vice versa). This was the homepage's centerpiece before the video replaced it — kept in `design-system.css` in case a future page wants an image gallery again.
 
 ```html
 <div class="carousel carousel--full">
@@ -131,9 +149,7 @@ Horizontal, swipeable image gallery with prev/next arrows and dots. Prev/next wr
 </div>
 ```
 
-Dots are populated by the inline script in `index.html` (`goToSlide()` handles the wraparound and keeps dots/arrows/swipe in sync). `.carousel--full` is the edge-to-edge variant that fills its container's height, with dots overlaid on the image; the bare `.carousel` (max-width 1100px, dots below the image) is available for a non-full-bleed use.
-
-Left/Right arrow keys also navigate the carousel (page-wide, not just when the carousel has focus). The listener skips itself while focus is in a text field (so cursor movement in the modal's inputs isn't hijacked) or while the modal is open (so the background carousel doesn't change under an active dialog).
+`.carousel--full` is the edge-to-edge variant that fills its container's height, with dots overlaid on the image; the bare `.carousel` (max-width 1100px, dots below the image) is available for a non-full-bleed use. The JS that drove it (`goToSlide()`, dot sync, and page-wide Left/Right arrow-key navigation) was removed from `index.html` along with the markup — it would need to be re-added alongside the CSS if this is reused.
 
 ### Modal
 
@@ -192,6 +208,7 @@ A styled dropdown (trigger button + listbox) standing in for a native `<select>`
 Kept in `design-system.css` for reuse on future pages/sections:
 
 - **`.hero`** — full-viewport photo with centered, top-weighted overlay text (the original homepage layout, before the split-hero redesign).
+- **`.carousel`** / **`.carousel--full`** — the image carousel that used to sit in `.split-hero__media` before the hero video replaced it; see the "Carousel" section above.
 - **`.split-hero__text`** — the dark text panel (heading + signup form) from the split-hero's two-column variant; see the "Split hero" section above.
 - **`.signup-form`** / **`.signup-success`** — the original signup form styles (as opposed to `.modal-form`, which is what's active now). Still used by `.split-hero__text`, `.cta-bar`, and `.carousel-overlay` if any of those are reintroduced.
 - **`.cta-bar`** — light-background bar pairing a heading with an inline signup form; pairs with `.carousel--75vh` (fixes a carousel to 75% of the viewport, leaving the bar the rest).

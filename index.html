@@ -45,19 +45,13 @@
 </header>
 
 <div class="split-hero">
-  <div class="split-hero__carousel">
-    <div class="carousel carousel--full">
-      <div class="carousel-track">
-        <div class="carousel-slide"><img src="images/carousel/1-exterior.jpg" alt="The Ivy exterior"></div>
-        <div class="carousel-slide"><img src="images/carousel/2-night.jpg" alt="The Ivy at night"></div>
-        <div class="carousel-slide"><img src="images/carousel/3-lobby.jpg" alt="The Ivy lobby"></div>
-        <div class="carousel-slide"><img src="images/carousel/4-bridal-suite.png" alt="The Ivy bridal suite"></div>
-        <div class="carousel-slide"><img src="images/carousel/5-sanctuary.jpg" alt="The Ivy sanctuary"></div>
-      </div>
-      <button class="carousel-arrow carousel-arrow--prev" aria-label="Previous slide">&#8249;</button>
-      <button class="carousel-arrow carousel-arrow--next" aria-label="Next slide">&#8250;</button>
-      <div class="carousel-dots"></div>
-    </div>
+  <div class="split-hero__media">
+    <video class="hero-video" autoplay muted loop playsinline controls preload="metadata" poster="video/hero-poster.jpg">
+      <source src="video/hero.webm" type="video/webm">
+      <source src="video/hero.mp4" type="video/mp4">
+      Your browser doesn't support embedded video.
+      <a href="video/hero.mp4">Download the video</a> instead.
+    </video>
   </div>
 </div>
 
@@ -96,63 +90,6 @@
 </div>
 
 <script>
-  // Carousel
-  (function () {
-    var track = document.querySelector('.carousel-track');
-    var slides = document.querySelectorAll('.carousel-slide');
-    var dotsContainer = document.querySelector('.carousel-dots');
-    var currentIndex = 0;
-
-    // Wraps around: index -1 goes to the last slide, index === length goes
-    // back to the first, so prev/next never dead-end at the ends.
-    function goToSlide(index) {
-      currentIndex = (index + slides.length) % slides.length;
-      slides[currentIndex].scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
-    }
-
-    slides.forEach(function (slide, i) {
-      var dot = document.createElement('button');
-      dot.className = 'carousel-dot' + (i === 0 ? ' is-active' : '');
-      dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
-      dot.addEventListener('click', function () {
-        goToSlide(i);
-      });
-      dotsContainer.appendChild(dot);
-    });
-
-    var dots = document.querySelectorAll('.carousel-dot');
-
-    document.querySelector('.carousel-arrow--prev').addEventListener('click', function () {
-      goToSlide(currentIndex - 1);
-    });
-    document.querySelector('.carousel-arrow--next').addEventListener('click', function () {
-      goToSlide(currentIndex + 1);
-    });
-
-    track.addEventListener('scroll', function () {
-      var index = Math.round(track.scrollLeft / track.clientWidth);
-      currentIndex = index;
-      dots.forEach(function (d, i) {
-        d.classList.toggle('is-active', i === index);
-      });
-    });
-
-    // Left/Right arrow keys navigate the carousel. Skipped while typing in
-    // a field (so cursor movement in the modal's Name/Email inputs isn't
-    // hijacked) or while the modal is open (so the background carousel
-    // doesn't change under an active dialog).
-    document.addEventListener('keydown', function (e) {
-      if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
-
-      var tag = document.activeElement.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || document.activeElement.isContentEditable) return;
-      if (document.getElementById('join-modal-overlay').classList.contains('is-open')) return;
-
-      e.preventDefault();
-      goToSlide(e.key === 'ArrowLeft' ? currentIndex - 1 : currentIndex + 1);
-    });
-  })();
-
   // Custom "I'm interested in" dropdown — a styled trigger + listbox
   // standing in for a native <select>, since a native select's popup list
   // can't be styled consistently across browsers. The chosen value lives

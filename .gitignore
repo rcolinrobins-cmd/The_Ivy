@@ -1,2 +1,7 @@
 .DS_Store
 .claude/
+
+# Original, uncompressed source video (~95MB) — only the transcoded
+# video/hero.mp4, video/hero.webm, and video/hero-poster.jpg are committed.
+# (gitignore patterns are literal, no shell quoting needed for the space.)
+video/The Ivy.mp4

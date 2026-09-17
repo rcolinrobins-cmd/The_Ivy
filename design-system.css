@@ -597,25 +597,25 @@ body.landing {
 }
 
 /* Split hero — a dark, full-width section below the site header with a
-   centered carousel (currently the dominant element on the page — green
+   centered video (currently the dominant element on the page — green
    shows as a symmetric margin on either side of it, rather than the
-   carousel running edge-to-edge). Pairs with .landing +
+   video running edge-to-edge). Pairs with .landing +
    .site-header--compact, which together size it to fill the remaining
    viewport height below the header. An optional text panel
    (.split-hero__text) is available if a future page wants the older
    two-column layout instead — see below.
-   Structure (current, carousel-only):
+   Structure (current, single-media):
    <body class="landing">
      <header class="site-header site-header--compact">...</header>
      <div class="split-hero">
-       <div class="split-hero__carousel">
-         <div class="carousel carousel--full">...</div>
+       <div class="split-hero__media">
+         <video class="hero-video" ...>...</video>
        </div>
      </div>
    </body>
 
    Structure (two-column variant, not currently used — add
-   .split-hero__text as a sibling before .split-hero__carousel and remove
+   .split-hero__text as a sibling before .split-hero__media and remove
    the max-width/margin centering below to go back to a 1/4-3/4 split):
    <div class="split-hero">
      <div class="split-hero__text">
@@ -625,7 +625,7 @@ body.landing {
          <p class="signup-success" hidden>...</p>
        </div>
      </div>
-     <div class="split-hero__carousel">...</div>
+     <div class="split-hero__media">...</div>
    </div> */
 
 .split-hero {
@@ -649,7 +649,7 @@ body.landing {
 
 /* Padding lives on this inner wrapper, not on .split-hero__text itself —
    padding on the flex item would count against its flex-basis (border-box)
-   and throw off the 1/3-vs-2/3 split with .split-hero__carousel. */
+   and throw off the 1/3-vs-2/3 split with .split-hero__media. */
 .split-hero__text-inner {
   width: 100%;
   padding: var(--space-xl) var(--space-lg);
@@ -692,7 +692,7 @@ body.landing {
   color: var(--color-on-dark);
 }
 
-.split-hero__carousel {
+.split-hero__media {
   position: relative;
   width: 80%;
   max-width: 1400px;
@@ -701,9 +701,11 @@ body.landing {
   background: var(--color-dark-bg);
 }
 
-/* Subtle dark tint over the images so their tone reads as one piece with
-   the text panel's dark background, rather than a plain bright photo. */
-.split-hero__carousel::after {
+/* Subtle dark tint over the media so its tone reads as one piece with
+   the text panel's dark background, rather than a plain bright photo/video.
+   pointer-events: none lets clicks pass through to the video's native
+   controls underneath. */
+.split-hero__media::after {
   content: "";
   position: absolute;
   inset: 0;
@@ -713,14 +715,29 @@ body.landing {
   z-index: 1;
 }
 
+/* Hero video — fills .split-hero__media the same way the full-bleed
+   carousel used to (width/height 100%, object-fit: cover), with native
+   browser controls so viewers can pause/seek the tour. autoplay + muted
+   + playsinline (set on the element in index.html) are required for
+   autoplay to actually work across mobile browsers — iOS Safari in
+   particular won't autoplay video that isn't muted, and will force
+   fullscreen playback without playsinline. */
+.hero-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  background: var(--color-dark-bg);
+}
+
 /* Narrower green margin on small screens, where width is scarcer. If the
    two-column variant (.split-hero__text as a sibling) is reintroduced,
    it will need its own responsive rules — flex-direction: column plus
    flex: 1 1 50% on both children — to stack rather than squeeze side by
    side; that behavior isn't included here since it doesn't apply to the
-   current carousel-only layout. */
+   current single-media layout. */
 @media (max-width: 800px) {
-  .split-hero__carousel {
+  .split-hero__media {
     width: 92%;
   }
 
