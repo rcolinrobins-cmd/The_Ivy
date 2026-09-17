@@ -73,22 +73,22 @@ The homepage uses a full-viewport, no-scroll layout: a compact header, then one 
 
 ### Site header
 
-Brand title + tagline, white background, sits above the main content, with a CTA button pinned to the far right that opens the "Join our Journey" modal.
+Brand title + tagline, white background, sits above the main content, with a CTA button pinned to the far right that opens "The Guest List" modal.
 
 ```html
 <header class="site-header site-header--compact">
   <a class="site-header__cta site-header__cta--spacer" aria-hidden="true" tabindex="-1">
-    Join our journey
+    Join the Guest List
     <svg class="site-header__cta-icon" ...>...</svg>
   </a>
 
   <div class="site-header__brand">
     <h1 class="site-title">The Ivy</h1>
-    <p class="site-subtitle">Weddings <span class="dot">&bull;</span> Events <span class="dot">&bull;</span> Retail</p>
+    <p class="site-subtitle">A wedding, event, and retail space, located in beautiful downtown Garland, Texas</p>
   </div>
 
   <a class="site-header__cta" id="join-journey" href="#">
-    Join our journey
+    Join the Guest List
     <svg class="site-header__cta-icon" ...>...</svg>
   </a>
 </header>
@@ -153,13 +153,14 @@ Horizontal, swipeable image gallery with prev/next arrows and dots, with wraparo
 
 ### Modal
 
-A centered dialog over a dark backdrop — currently used for the "Join our Journey" form (Name, Email, and an interest dropdown left empty pending real options — see the `TODO` in `index.html`). Mobile-friendly: width-constrained with side padding at all sizes, and scrolls internally (`max-height: 90vh`) instead of overflowing on short viewports.
+A centered dialog over a dark backdrop — currently used for "The Guest List" form (an intro line, then Name, Email, and an interest dropdown). Mobile-friendly: width-constrained with side padding at all sizes, and scrolls internally (`max-height: 90vh`) instead of overflowing on short viewports.
 
 ```html
 <div class="modal-overlay" id="join-modal-overlay">
   <div class="modal" role="dialog" aria-modal="true" aria-labelledby="join-modal-title">
     <button class="modal-close" type="button" aria-label="Close">&times;</button>
-    <h2 id="join-modal-title">Join our Journey</h2>
+    <h2 id="join-modal-title">The Guest List</h2>
+    <p class="modal-intro">Intro copy goes here.</p>
     <form class="modal-form">
       <label class="modal-field">
         <span>Name</span>
@@ -176,6 +177,7 @@ A centered dialog over a dark backdrop — currently used for the "Join our Jour
 - Toggle visibility with the `is-open` class on `.modal-overlay` — **not** the `hidden` attribute. `.modal-overlay` and `.modal-form` both set an explicit `display`, which (being author CSS) would otherwise permanently override the browser's default `[hidden] { display: none }`; `.modal-form[hidden] { display: none; }` restates the override so hiding the form after submit actually works. Keep this in mind when adding any new element that needs to be hide-able inside a component that already sets `display` on it.
 - `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, or clicking the dark backdrop — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
 - The "I'm interested in" field is a custom select, not a native `<select>` — see below.
+- `.modal-intro` (a plain `<p>` between the `<h2>` and the `<form>`) is muted body-copy styling for a short line introducing the form.
 - Submission is **not yet wired to a backend** — there's a `TODO` marking where a Google Apps Script web app POST call should go once the Sheet is set up.
 
 ### Custom select
@@ -201,7 +203,7 @@ A styled dropdown (trigger button + listbox) standing in for a native `<select>`
 - The chosen value lives in a same-named hidden input (`name="interest"`), so the surrounding form works the same as it would with a real `<select>` — no changes needed to submission logic.
 - `index.html`'s inline script (a separate IIFE from the modal's) handles click-to-toggle, click-outside-to-close, Escape, and Arrow/Enter/Space keyboard navigation, and exposes `select.resetSelect()` — called by the modal's open handler so reopening always starts from a clean placeholder state.
 - **Watch for the same event-timing pitfall as the modal's `[hidden]` issue, but with event listeners**: the trigger's `keydown` handler calls `e.stopPropagation()` before attaching the listbox's document-level keydown listener. Without it, the *same* keydown event — still bubbling toward `document` — would immediately re-fire against the listener it just attached, double-processing one ArrowDown press and skipping past the first option. Keep this pattern (open first, `stopPropagation()`, *then* attach the document listener) for any future "open on keydown and immediately attach a document listener" interaction.
-- Current options: Booking an Event, Taking a Tour, Business Partnering.
+- Current options, in order: Taking a Tour, Booking an Event, Vendor Partnership — matching the sequence named in `.modal-intro`'s text.
 
 ## Components available but not currently used
 
