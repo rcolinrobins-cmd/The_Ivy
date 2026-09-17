@@ -86,7 +86,10 @@
       </div>
       <button type="submit">Submit</button>
     </form>
-    <p class="modal-success" id="join-modal-success" hidden>Thanks — we'll be in touch!</p>
+    <div class="modal-success" id="join-modal-success" hidden>
+      <p>You're on the list. We'll be in touch as The Ivy gets ready to open its doors.</p>
+      <button class="modal-success-close" id="join-modal-success-close" type="button">Close</button>
+    </div>
     <p class="modal-error" id="join-modal-error" hidden>Something went wrong submitting the form. Please try again.</p>
   </div>
 </div>
@@ -224,8 +227,10 @@
     var openBtn = document.getElementById('join-journey');
     var overlay = document.getElementById('join-modal-overlay');
     var closeBtn = document.getElementById('join-modal-close');
+    var intro = document.querySelector('.modal-intro');
     var form = document.getElementById('join-modal-form');
     var success = document.getElementById('join-modal-success');
+    var successCloseBtn = document.getElementById('join-modal-success-close');
     var error = document.getElementById('join-modal-error');
     var submitBtn = form.querySelector('button[type="submit"]');
     var interestSelect = document.getElementById('interest-select');
@@ -234,6 +239,7 @@
     function openModal(e) {
       e.preventDefault();
       lastFocused = document.activeElement;
+      intro.hidden = false;
       form.hidden = false;
       success.hidden = true;
       error.hidden = true;
@@ -259,6 +265,7 @@
 
     openBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
+    successCloseBtn.addEventListener('click', closeModal);
 
     // Close when clicking the dark backdrop, but not the modal box itself.
     overlay.addEventListener('click', function (e) {
@@ -296,6 +303,7 @@
         body: body
       })
         .then(function () {
+          intro.hidden = true;
           form.hidden = true;
           success.hidden = false;
         })

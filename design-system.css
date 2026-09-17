@@ -1013,9 +1013,29 @@ body.landing {
 
 .modal-success {
   margin-top: var(--space-sm);
+  text-align: left;
+}
+
+.modal-success p {
   color: var(--color-text-dark);
   font-family: var(--font-body);
-  text-align: left;
+  line-height: 1.5;
+}
+
+.modal-success-close {
+  margin-top: var(--space-md);
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--color-text-muted);
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.modal-success-close:hover {
+  color: var(--color-text-dark);
 }
 
 .modal-error {

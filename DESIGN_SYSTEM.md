@@ -170,16 +170,20 @@ A centered dialog over a dark backdrop — currently used for "The Guest List" f
       <!-- ...email, and the custom select described below... -->
       <button type="submit">Submit</button>
     </form>
-    <p class="modal-success" hidden>Thank you!</p>
+    <div class="modal-success" hidden>
+      <p>Confirmation copy goes here.</p>
+      <button class="modal-success-close" type="button">Close</button>
+    </div>
     <p class="modal-error" hidden>Something went wrong.</p>
   </div>
 </div>
 ```
 
 - Toggle visibility with the `is-open` class on `.modal-overlay` — **not** the `hidden` attribute. `.modal-overlay` and `.modal-form` both set an explicit `display`, which (being author CSS) would otherwise permanently override the browser's default `[hidden] { display: none }`; `.modal-form[hidden] { display: none; }` restates the override so hiding the form after submit actually works. Keep this in mind when adding any new element that needs to be hide-able inside a component that already sets `display` on it.
-- `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, or clicking the dark backdrop — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
+- `index.html`'s inline script handles opening (focuses the first field, remembers what to refocus on close), closing (X button, Escape key, clicking the dark backdrop, or the confirmation view's own "Close" link — clicks inside the modal box don't propagate to the backdrop), and resetting the form each time it reopens.
 - The "I'm interested in" field is a custom select, not a native `<select>` — see below.
-- `.modal-intro` (a plain `<p>` between the `<h2>` and the `<form>`) is muted body-copy styling for a short line introducing the form. `.modal-error` (same layout as `.modal-success`, but `--color-error`) is shown instead of the success message if submission fails.
+- `.modal-intro` (a plain `<p>` between the `<h2>` and the `<form>`) is muted body-copy styling for a short line introducing the form. It's hidden along with the form on a successful submission, so the confirmation view shows only the (unchanged) `<h2>` and `.modal-success` — restored when the modal reopens.
+- `.modal-success` is a container (heading stays "The Guest List"; only its contents swap in on success): a confirmation message plus `.modal-success-close`, a deliberately subtle (underlined text, no button chrome) "Close" link — the only way to dismiss the confirmation besides the X icon or Escape. `.modal-error` (shown instead, on failure) keeps the plain-`<p>` shape since the form stays visible for a retry.
 - **Submission is wired to Google Sheets** via a Google Apps Script Web App — see [`google-apps-script/Code.gs`](google-apps-script/Code.gs) for the backend code and one-time setup steps (create a Sheet, paste the script in, deploy as a Web App, copy the resulting URL). The URL goes in `GOOGLE_SHEET_ENDPOINT` at the top of the modal's script in `index.html`.
   - Uses `fetch(..., { mode: 'no-cors', body: new URLSearchParams({...}) })` — Apps Script Web Apps don't send an `Access-Control-Allow-Origin` header the browser will accept, so the response can't actually be read; a non-throwing `fetch` is treated as success, and a network-level failure (offline, unreachable, `GOOGLE_SHEET_ENDPOINT` still the placeholder) is the only detectable error case, shown via `.modal-error`.
   - The submit button disables itself and reads "Submitting…" while the request is in flight, and both its state and any prior `.modal-error`/`.modal-success` are reset every time the modal opens.
