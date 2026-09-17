@@ -852,6 +852,18 @@ body.landing {
   display: none;
 }
 
+/* Honeypot field — visually hidden (not display:none, which some bots
+   detect and skip) so it's invisible to real users but still fillable by
+   generic auto-filling bots. See the field's comment in index.html and
+   google-apps-script/Code.gs. */
+.hp-field {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
 .modal-field {
   display: flex;
   flex-direction: column;

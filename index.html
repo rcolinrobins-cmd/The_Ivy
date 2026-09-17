@@ -61,6 +61,12 @@
     <h2 id="join-modal-title">The Guest List</h2>
     <p class="modal-intro">Be the first to tour the space, claim early booking dates, or become a premier vendor.</p>
     <form class="modal-form" id="join-modal-form">
+      <!-- Honeypot: invisible to real users (and skipped by screen readers
+           via aria-hidden), but many generic spam bots auto-fill every
+           field they find. If this has a value on submit, the backend
+           silently drops the row without telling the caller — see
+           google-apps-script/Code.gs. -->
+      <input type="text" name="company" id="hp-field" class="hp-field" tabindex="-1" autocomplete="off" aria-hidden="true">
       <label class="modal-field">
         <span>Name</span>
         <input type="text" name="name" required placeholder="Your name">
@@ -236,9 +242,12 @@
     var interestSelect = document.getElementById('interest-select');
     var lastFocused = null;
 
+    var modalOpenedAt = 0;
+
     function openModal(e) {
       e.preventDefault();
       lastFocused = document.activeElement;
+      modalOpenedAt = Date.now();
       intro.hidden = false;
       form.hidden = false;
       success.hidden = true;
@@ -272,6 +281,18 @@
       if (e.target === overlay) closeModal();
     });
 
+    // Apps Script Web Apps are inherently slow (cold starts, plus a
+    // mandatory redirect the browser must follow) — often 2-5+ seconds,
+    // outside what our own code controls. Waiting on the real response
+    // before showing success means the modal feels slow exactly in
+    // proportion to Google's latency, not ours. Racing it against a short
+    // timeout bounds the *worst case* wait to ~900ms: a genuinely fast
+    // response (or a fast failure, e.g. truly offline) still wins the race
+    // and shows real success/error, but a slow-but-working request no
+    // longer makes the user sit through Apps Script's full round trip —
+    // it keeps running in the background and its result is only logged.
+    var SUBMIT_MAX_WAIT_MS = 900;
+
     form.addEventListener('submit', function (e) {
       e.preventDefault();
 
@@ -288,7 +309,13 @@
       var body = new URLSearchParams({
         name: form.name.value,
         email: form.email.value,
-        interest: form.interest.value
+        interest: form.interest.value,
+        // Honeypot value and fill time — both read and enforced server-side
+        // (see google-apps-script/Code.gs); a direct POST to the endpoint
+        // bypasses this page's JS entirely, so nothing client-side-only
+        // would actually stop a targeted script, only a lazy/generic bot.
+        company: form.company.value,
+        elapsedMs: String(Date.now() - modalOpenedAt)
       });
 
       // mode: 'no-cors' because Apps Script Web Apps don't send an
@@ -297,11 +324,23 @@
       // workaround (fire the request, treat a non-throwing fetch as
       // success, treat a network-level failure — offline, unreachable —
       // as the only detectable error case).
-      fetch(GOOGLE_SHEET_ENDPOINT, {
+      var request = fetch(GOOGLE_SHEET_ENDPOINT, {
         method: 'POST',
         mode: 'no-cors',
         body: body
-      })
+      });
+
+      // Log the real outcome even when the timeout below wins the race, so
+      // a genuine failure on a slow connection isn't silently lost.
+      request.catch(function (err) {
+        console.error('Guest list submission failed (after UI already advanced):', err);
+      });
+
+      var timeout = new Promise(function (resolve) {
+        setTimeout(resolve, SUBMIT_MAX_WAIT_MS);
+      });
+
+      Promise.race([request, timeout])
         .then(function () {
           intro.hidden = true;
           form.hidden = true;
